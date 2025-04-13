@@ -110,7 +110,7 @@ export default class ConceptMapper extends Plugin {
         }
 
         // Open the modal
-        new StartConceptMapCreationModal(this.app, this.conceptMapCreator).open();
+        new StartConceptMapCreationModal(this.app, this.conceptMapCreator, () => this.settings).open();
         return true;
     }
 

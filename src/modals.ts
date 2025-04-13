@@ -1,17 +1,36 @@
 import { App, Modal } from 'obsidian';
 import { ConceptMapCreator } from './concept-maps';
+import { ConceptMapperSettings } from './settings'; 
 
-export class StartConceptMapCreationModal extends Modal {
+class ConceptMapperModal extends Modal {
+    protected readonly getSettings: () => ConceptMapperSettings;
+
+    constructor(app: App, getSettings: () => ConceptMapperSettings) {
+        super(app);
+        this.getSettings = getSettings;
+    }
+
+    onOpen() {
+        // If animation of modals is enabled, add the class to the modal container element
+        if (this.getSettings().animateModals) { 
+            this.containerEl.addClass('concept-mapper-modal-animated');
+        }
+    }
+}
+
+export class StartConceptMapCreationModal extends ConceptMapperModal {
     private readonly conceptMapCreator: ConceptMapCreator;
     private topicInput: HTMLInputElement;
     private textInput: HTMLTextAreaElement;
 
-	constructor(app: App, conceptMapCreator: ConceptMapCreator) {
-		super(app);
+	constructor(app: App, conceptMapCreator: ConceptMapCreator, getSettings: () => ConceptMapperSettings) {
+		super(app, getSettings);
         this.conceptMapCreator = conceptMapCreator;
 	}
 
 	onOpen() {
+        super.onOpen(); 
+
         const {contentEl} = this;
         const StartCreationContainer = contentEl.createDiv({ cls: 'start-concept-map-creation-container' });
 

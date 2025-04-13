@@ -21,6 +21,17 @@ export class ConceptMapperSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName('Appearance').setHeading();
 
         new Setting(containerEl)
+        .setName('Animate modals')
+        .setDesc('Enable fade-in animation for plugin modals.')
+        .addToggle(toggle => toggle
+            .setValue(this.plugin.settings.animateModals)
+            .onChange(async (value) => {
+                this.plugin.settings.animateModals = value;
+                await this.plugin.saveSettings();
+            }));
+
+
+        new Setting(containerEl)
             .setName('Fixed path labels size')
             .setDesc('When enabled, path labels will not scale when zooming the canvas, preventing text on them from being cut off (otherwise at certain zoom levels, edge length may become insufficient to fit the entire text')
             .addToggle(toggle => toggle
