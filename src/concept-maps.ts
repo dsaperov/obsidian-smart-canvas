@@ -134,7 +134,7 @@ export class ConceptMapCreator {
                 req.end();
             });
         } catch (error) {
-            console.error('Error recieving response from backend:', error);
+            logger.error('Error recieving response from backend:', error);
             return `Error: ${error.message}`;
         }
     }
