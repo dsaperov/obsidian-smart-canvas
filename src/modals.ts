@@ -56,7 +56,7 @@ export class StartConceptMapCreationModal extends ConceptMapperModal {
         startCreationButton.onclick = () => this.handleStartCreation();
     }
 
-    private async handleStartCreation() {
+    private handleStartCreation() {
         this.close();
         
         const topic = this.topicInput.value.trim();

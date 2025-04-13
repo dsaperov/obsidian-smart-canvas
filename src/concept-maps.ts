@@ -68,7 +68,7 @@ export class ConceptMapCreator {
         // If enabled, generate layouts using other algorithms
         if (useMultipleAlgorithms) {
             // cose-bilkent
-            const coseBilkentResult = await this.generateLayoutWithAlgorithm('cose-bilkent', canvas, conceptMapData, nodeSizes);
+            const coseBilkentResult = this.generateLayoutWithAlgorithm('cose-bilkent', canvas, conceptMapData, nodeSizes);
             this.layoutResults.push(coseBilkentResult);
 
             // dagre
