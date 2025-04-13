@@ -1,0 +1,59 @@
+.start-concept-map-creation-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.start-concept-map-creation-topic-container label,
+.start-concept-map-creation-text-container label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+}
+
+.start-concept-map-creation-topic-container input,
+.start-concept-map-creation-text-container textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.start-concept-map-creation-topic-container input:focus,
+.start-concept-map-creation-text-container textarea:focus {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.start-concept-map-creation-text-container textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.start-concept-map-creation-container button {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.start-concept-map-creation-container button:hover {
+    background-color: var(--interactive-accent-hover);
+}
+
+.concept-mapper-fixed-path-labels .canvas-path-label {
+    font-size: var(--font-text-size);
+    padding: var(--size-2-3);
+}
+
+.canvas-node.concept-mapper-central-node {
+    --highlight-color: var(--central-node-color-rgb);
+    --highlight-shadow: 0 0 5px 5px rgb(var(--highlight-color));
+}
+
+.canvas-node.concept-mapper-central-node .canvas-node-content {
+    background-color: rgba(var(--highlight-color), 0.07); 
+}
+
+.canvas-node.concept-mapper-central-node .canvas-node-container {
+    box-shadow: var(--shadow-stationary), var(--highlight-shadow) !important;
+}
