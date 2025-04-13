@@ -21,6 +21,16 @@ export class CanvasHelper {
         return canvasView.canvas;
     }
 
+    activeFileIsCanvas(): boolean {
+        const activeFile = this.app.workspace.getActiveFile();
+        const activeFileExtension = activeFile?.extension;
+
+        if (activeFile && activeFileExtension === "canvas") {
+            return true;
+        }
+        return false;
+    }
+
     createTextNode(
         pos: CanvasNodePosition,
         text: string,

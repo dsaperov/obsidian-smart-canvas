@@ -77,19 +77,15 @@ export default class ConceptMapper extends Plugin {
             id: 'start-concept-map-creation',
             name: 'Start concept map creation',
             checkCallback: (checking: boolean) => {
-                const activeFile = this.app.workspace.getActiveFile();
-                const activeFileExtension = activeFile?.extension;
-                
                 // Command is available only for canvas files
-                if (activeFile && activeFileExtension === "canvas") {
-                    if (!checking) {
-                        const isModalOpened = this.openStartConceptMapCreationModal(true);
-                        if (!isModalOpened) { return false; }
-                    }
-                    return true;
+                const activeFileIsCanvas = this.canvasHelper.activeFileIsCanvas();
+                if (!activeFileIsCanvas) { return false; }
+                
+                if (!checking) { // If it is not just a check, execute the command
+                    const isModalOpened = this.openStartConceptMapCreationModal(true);
+                    if (!isModalOpened) { return false; }
                 }
-
-                return false;
+                return true;
             }
         });
     }
@@ -97,11 +93,8 @@ export default class ConceptMapper extends Plugin {
     private openStartConceptMapCreationModal(checkedForCanvas: boolean = false): boolean {
         // If not sure that canvas file is open, check the active file
         if (!checkedForCanvas) {
-            const activeFile = this.app.workspace.getActiveFile();
-            const activeFileExtension = activeFile?.extension;
-            
             // Modal requires canvas file to be opened
-            if (!activeFile || activeFileExtension !== "canvas") {
+            if (!this.canvasHelper.activeFileIsCanvas()) {
                 new Notice('Please open a canvas file first');
                 return false;
             }
@@ -126,22 +119,21 @@ export default class ConceptMapper extends Plugin {
             id: 'switch-layout',
             name: 'Switch the concept map layout',
             checkCallback: (checking: boolean) => {
-                const activeFile = this.app.workspace.getActiveFile();
-                const activeFileExtension = activeFile?.extension;
-
                 // Command is available only for canvas files
-                if (activeFile && activeFileExtension === "canvas") {
-                    // Check if there are multiple layouts available
-                    const hasMultipleLayouts = this.conceptMapCreator.multipleLayoutAreAvailable(activeFile);
-                    if (!hasMultipleLayouts) { return false;}
-                    if (!checking) {
-                        // Switch the layout
-                        this.conceptMapCreator.switchLayout();
-                    }
-                    return true;
-                }
+                const activeFileIsCanvas = this.canvasHelper.activeFileIsCanvas();
+                if (!activeFileIsCanvas) { return false; }
 
-                return false;
+                // Multiple layouts should be available for current canvas
+                const activeFile = this.app.workspace.getActiveFile();
+                const hasMultipleLayouts = this.conceptMapCreator.multipleLayoutAreAvailable(activeFile!);
+                if (!hasMultipleLayouts) { return false; }
+
+                if (!checking) {
+                    // Switch the layout
+                    this.conceptMapCreator.switchLayout();
+                }
+                return true;
+
             }     
         });
     }
