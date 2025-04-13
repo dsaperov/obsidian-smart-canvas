@@ -1,27 +1,37 @@
+import { TFile } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import { Canvas, CanvasNode,  CanvasNodeSize, CanvasNodePosition } from './@types/Canvas';
 import { CanvasHelper } from './canvas';
 import { 
-    CENTRAL_NODE_COLOR, BACKEND_SERVER_HOSTNAME, BACKEND_SERVER_PORT, COLA_LAYOUT_OPTIONS,
-    COLA_LAYOUT_SELECTION_ITERATIONS, GRID_SPACING, HORIZONTAL_STRETCH_FACTOR
+    CENTRAL_NODE_COLOR, BACKEND_SERVER_HOSTNAME, BACKEND_SERVER_PORT, LAYOUT_ALGORITHMS,
+    GRID_SPACING, HORIZONTAL_STRETCH_FACTOR
 } from './config';
 import {
-    ConceptMapData, ConceptMapLayoutQualityMetrics, ConceptMapLayoutGenerationResult
+    ConceptMapData, ConceptMapLayoutQualityMetrics, LayoutAlgorithm, ConceptMapLayoutGenerationResult
 } from './interfaces';
 import { logger } from './logging';
 import { ConceptMapperSettings } from './settings';
 import cytoscape from 'cytoscape';
 // @ts-ignore
 import cola from 'cytoscape-cola';
+// @ts-ignore
+import coseBilkent from 'cytoscape-cose-bilkent';
+// @ts-ignore
+import dagre from 'cytoscape-dagre';
 import { request } from 'http';
 
 cytoscape.use(cola);
+cytoscape.use(coseBilkent);
+cytoscape.use(dagre);
 
 export class ConceptMapCreator {
     private readonly canvasHelper: CanvasHelper;
     private readonly colorizer: ConceptMapColorizer;
     private readonly layoutEvaluator: LayoutEvaluator = new LayoutEvaluator();
     private readonly getSettings: () => ConceptMapperSettings;
+    private layoutResults: ConceptMapLayoutGenerationResult[] = []; // Array to store layout generation results
+    private currentLayoutIndex: number = 0;
+    private lastCanvasPath: string | null = null; // Path of the last opened canvas
 
     constructor(canvasHelper: CanvasHelper, getSettings: () => ConceptMapperSettings) {
         this.canvasHelper = canvasHelper;
@@ -37,51 +47,49 @@ export class ConceptMapCreator {
         }
  
         const canvas = this.canvasHelper.getCurrentCanvas();
+
+        // Save the current canvas path
+        const activeFile = this.canvasHelper.app.workspace.getActiveFile();
+        this.lastCanvasPath = activeFile ? activeFile.path : null;
+
         const nodeSizes = this.calculateNodeSizes(canvas, conceptMapData);
 
-        // Check if best layout selection setting is enabled and set iterations count
-        const bestLayoutSelectionEnabled = this.getSettings().bestLayoutSelection;
-        const iterations = bestLayoutSelectionEnabled ? COLA_LAYOUT_SELECTION_ITERATIONS : 1;
+        // Clear all previous layout results
+        this.layoutResults = [];
+        this.currentLayoutIndex = 0;
 
-        // Vars to store best layout generation results
-        let bestGeneration: ConceptMapLayoutGenerationResult | null = null;
-        let bestScore = Infinity;
+        // Generate layout using cola algorithm and save results
+        const colaResult = this.generateLayoutWithAlgorithm('cola', canvas, conceptMapData, nodeSizes);
+        this.layoutResults.push(colaResult);
 
-        for (let i = 0; i < iterations; i++) {
-            // Generate a new layout
-            this.canvasHelper.clearCanvas(canvas);
-            this.generateConceptMapLayout(canvas, conceptMapData, nodeSizes);
+        // Check if multiple layout algorithms setting is enabled
+        const useMultipleAlgorithms = this.getSettings().multipleLayoutAlgorithms;
 
-            // Evaluate the layout quality
-            const metrics = this.evaluateConceptMapLayoutQuality(canvas);
+        // If enabled, generate layouts using other algorithms
+        if (useMultipleAlgorithms) {
+            // cose-bilkent
+            const coseBilkentResult = await this.generateLayoutWithAlgorithm('cose-bilkent', canvas, conceptMapData, nodeSizes);
+            this.layoutResults.push(coseBilkentResult);
 
-            // Store canvas data
-            const canvasData = canvas.getData();
-
-            logger.debug(`Iteration ${i+1} metrics: nodes=${metrics.nodeOverlaps}, nodes-edges=${metrics.edgeNodeOverlaps}, edges=${metrics.edgeEdgeOverlaps}, weighted-score=${metrics.weightedScore}`);
-
-            // Check if this generation is better than the best one
-            if (metrics.weightedScore < bestScore) {
-                bestScore = metrics.weightedScore;
-                bestGeneration = {
-                    canvasData: JSON.parse(JSON.stringify(canvasData)),
-                    metrics
-                };
-                logger.debug(`New best result with score ${bestScore}`);
-            }
+            // dagre
+            const dagreResult = this.generateLayoutWithAlgorithm('dagre', canvas, conceptMapData, nodeSizes);
+            this.layoutResults.push(dagreResult);
         }
 
-        // Apply the best generation
-        if (bestGeneration) {
-            logger.debug(`Apply the best generation: nodes=${bestGeneration.metrics.nodeOverlaps}, nodes-edges=${bestGeneration.metrics.edgeNodeOverlaps}, edges=${bestGeneration.metrics.edgeEdgeOverlaps}`);
-            
-            this.canvasHelper.clearCanvas(canvas);
-            canvas.setData(bestGeneration.canvasData);
-            canvas.requestSave();
+        // Apply cola-generated layout to the canvas
+        this.applyLayout(canvas, this.layoutResults[this.currentLayoutIndex]);
+    }
 
-            // Apply custom classes to nodes
-            this.canvasHelper.applyClasses();
+    // Method to check if multiple layouts are available for the current canvas
+    public multipleLayoutAreAvailable(activeFile: TFile): boolean {
+        // Check if current canvas matches the last one for which layouts were generated
+        if (this.lastCanvasPath !== activeFile.path) {
+            // If it is not the same canvas, layouts are not available
+            return false;
         }
+
+        // True if there are more than one layout results
+        return this.layoutResults.length > 1;
     }
 
     // Method to send a request to the backend server to get concept map data
@@ -131,14 +139,64 @@ export class ConceptMapCreator {
         }
     }
 
-    private async generateConceptMapLayout(
+    // Method to generate a concept map layout using specified algorithm
+    private generateLayoutWithAlgorithm(
+        algorithm: LayoutAlgorithm,
+        canvas: Canvas,
+        conceptMapData: ConceptMapData,
+        nodeSizes: Map<string, CanvasNodeSize>
+    ): ConceptMapLayoutGenerationResult {
+        // Check if best layout selection setting is enabled and set iterations count
+        const bestLayoutSelectionEnabled = this.getSettings().bestLayoutSelection;
+        const iterations = bestLayoutSelectionEnabled ? LAYOUT_ALGORITHMS[algorithm].iterations : 1;
+
+        // Vars to store best layout generation results
+        let bestGeneration: ConceptMapLayoutGenerationResult | null = null;
+        let bestScore = Infinity;
+
+        logger.debug(`Layout generation using ${algorithm}. (${iterations} iterations)`);
+
+        for (let i = 0; i < iterations; i++) {
+            // Generate a new layout
+            this.canvasHelper.clearCanvas(canvas);
+            this.generateConceptMapLayout(canvas, conceptMapData, nodeSizes, algorithm);
+
+            // Evaluate the layout quality
+            const metrics = this.evaluateConceptMapLayoutQuality(canvas);
+
+            // Store canvas data
+            const canvasData = canvas.getData();
+
+            logger.debug(`Iteration ${i+1} metrics: nodes=${metrics.nodeOverlaps}, nodes-edges=${metrics.edgeNodeOverlaps}, edges=${metrics.edgeEdgeOverlaps}, weighted-score=${metrics.weightedScore}`);
+
+            // Check if this generation is better than the best one
+            if (metrics.weightedScore < bestScore) {
+                bestScore = metrics.weightedScore;
+                bestGeneration = {
+                    canvasData: JSON.parse(JSON.stringify(canvasData)),
+                    metrics,
+                    algorithm
+                };
+                logger.debug(`New best result with score ${bestScore}`);
+            }
+        }
+
+        if (!bestGeneration) {
+            throw new Error(`Faled to generate layout using ${algorithm} algorithm.`);
+        }
+        
+        return bestGeneration;
+    }
+
+    private generateConceptMapLayout(
         canvas: Canvas,
         conceptMapData: ConceptMapData,
         nodeSizes: Map<string, CanvasNodeSize>,
-    ): Promise<void> {
+        algorithm: LayoutAlgorithm
+    ): void {
         const defaultNodeSize = canvas.config.defaultTextNodeDimensions;
 
-        const nodePositions = this.calculateNodePositions(conceptMapData, nodeSizes, defaultNodeSize);
+        const nodePositions = this.calculateNodePositions(conceptMapData, nodeSizes, defaultNodeSize, algorithm);
         const nodeLevels = this.colorizer.calculateNodeLevels(conceptMapData);
 
         // Map to store node IDs
@@ -225,7 +283,8 @@ export class ConceptMapCreator {
     private calculateNodePositions(
         conceptMapData: ConceptMapData,
         nodeSizes: Map<string, CanvasNodeSize>,
-        defaultNodeSize: CanvasNodeSize
+        defaultNodeSize: CanvasNodeSize,
+        algorithm: LayoutAlgorithm
     ): Map<string, CanvasNodePosition> {
         const cyNodes: cytoscape.NodeDefinition[] = conceptMapData.entities.map(entity => ({
             data: { id: entity.id, name: entity.name }
@@ -245,7 +304,10 @@ export class ConceptMapCreator {
             headless: true,
         });
 
-        const layout = cy.layout(COLA_LAYOUT_OPTIONS);
+        // Get the layout options for the selected algorithm
+        const layoutOptions = LAYOUT_ALGORITHMS[algorithm].options
+
+        const layout = cy.layout(layoutOptions);
         layout.run();
 
         const positions = new Map<string, CanvasNodePosition>();
@@ -307,6 +369,30 @@ export class ConceptMapCreator {
         }
 
         return alignedPositions;
+    }
+    
+    // Method to apply generated layout to the canvas
+    private applyLayout(canvas: Canvas, layout: ConceptMapLayoutGenerationResult): void {       
+        logger.debug(`Apply the best generation for ${layout.algorithm} algorithm: nodes=${layout.metrics.nodeOverlaps}, nodes-edges=${layout.metrics.edgeNodeOverlaps}, edges=${layout.metrics.edgeEdgeOverlaps}`);
+
+        this.canvasHelper.clearCanvas(canvas);
+        canvas.setData(layout.canvasData);
+        canvas.requestSave();
+
+        // Apply custom classes to nodes
+        this.canvasHelper.applyClasses();
+    }
+
+    public switchLayout(): void {
+        // Switch to the next layout
+        this.currentLayoutIndex = (this.currentLayoutIndex + 1) % this.layoutResults.length;
+        
+        const canvas = this.canvasHelper.getCurrentCanvas();
+        const currentLayout = this.layoutResults[this.currentLayoutIndex];
+        
+        this.applyLayout(canvas, currentLayout);
+        
+        logger.debug(`Switched to ${currentLayout.algorithm}`);
     }
 }
 

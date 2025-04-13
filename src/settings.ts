@@ -4,6 +4,7 @@ export interface ConceptMapperSettings {
     coloredNodes: boolean;
     coloredEdges: boolean;
     bestLayoutSelection: boolean;
+    multipleLayoutAlgorithms: boolean;
 }
 export const DEFAULT_SETTINGS: ConceptMapperSettings = {
     mySetting: 'default',
@@ -11,4 +12,5 @@ export const DEFAULT_SETTINGS: ConceptMapperSettings = {
     coloredNodes: true,
     coloredEdges: true,
     bestLayoutSelection: true,
+    multipleLayoutAlgorithms: false
 };

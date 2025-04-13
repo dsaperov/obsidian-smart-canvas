@@ -67,5 +67,15 @@ export class ConceptMapperSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 })
             );
+            
+        new Setting(containerEl).setName('Multiple layout algorithms')
+            .setDesc('When enabled, three different layout algorithms will be used: Cola, Cose-Bilkent, and Dagre. You can switch between them using the "Change Layout" command.')
+            .addToggle(toggle => toggle
+                .setValue(this.plugin.settings.multipleLayoutAlgorithms)
+                .onChange(async (value) => {
+                    this.plugin.settings.multipleLayoutAlgorithms = value;
+                    await this.plugin.saveSettings();
+                })
+            );
     }
 }

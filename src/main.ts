@@ -36,6 +36,7 @@ export default class ConceptMapper extends Plugin {
 
         // Add commands
         this.addStartConceptMapCreationCommand();
+        this.addSwitchLayoutCommand();
 	}
 
 	onunload() {}
@@ -118,5 +119,30 @@ export default class ConceptMapper extends Plugin {
         // Open the modal
         new StartConceptMapCreationModal(this.app, this.conceptMapCreator).open();
         return true;
+    }
+
+    private addSwitchLayoutCommand() {
+        this.addCommand({
+            id: 'switch-layout',
+            name: 'Switch the concept map layout',
+            checkCallback: (checking: boolean) => {
+                const activeFile = this.app.workspace.getActiveFile();
+                const activeFileExtension = activeFile?.extension;
+
+                // Command is available only for canvas files
+                if (activeFile && activeFileExtension === "canvas") {
+                    // Check if there are multiple layouts available
+                    const hasMultipleLayouts = this.conceptMapCreator.multipleLayoutAreAvailable(activeFile);
+                    if (!hasMultipleLayouts) { return false;}
+                    if (!checking) {
+                        // Switch the layout
+                        this.conceptMapCreator.switchLayout();
+                    }
+                    return true;
+                }
+
+                return false;
+            }     
+        });
     }
 }

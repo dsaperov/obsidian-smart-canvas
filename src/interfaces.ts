@@ -11,7 +11,10 @@ export interface ConceptMapLayoutQualityMetrics {
     weightedScore: number;
 }
 
+export type LayoutAlgorithm = 'cola' | 'cose-bilkent' | 'dagre';
+
 export interface ConceptMapLayoutGenerationResult {
     canvasData: any;
     metrics: ConceptMapLayoutQualityMetrics;
+    algorithm: LayoutAlgorithm;
 }
