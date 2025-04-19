@@ -129,6 +129,7 @@ export class CanvasHelper {
         const canvas = this.getCurrentCanvas();
         canvas.nodes.forEach((node: CanvasTextNode) => {
             const explanation = node.unknownData.explanation;
+            if (!explanation) return; // No explanation to attach
             this.attachExplanationTooltip(node, explanation);
         })
     }
