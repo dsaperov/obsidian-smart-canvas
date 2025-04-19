@@ -4,6 +4,7 @@ import { AllCanvasNodeData, CanvasColor, EdgeEnd, NodeSide } from "obsidian/canv
 type CanvasNodeID = string;
 type CanvasEdgeID = string;
 type CanvasDirection = 'bottomright' | 'bottomleft'  | 'topright' | 'topleft' | 'right' | 'left' | 'top' | 'bottom';
+type UnknownData = Record<string, string>;
 
 interface CanvasView extends ItemView {
     canvas: Canvas;
@@ -136,6 +137,7 @@ interface CanvasNode {
     contentEl: HTMLElement;
     nodeEl: HTMLElement;
     placeholderEl: HTMLElement;
+    unknownData: UnknownData;
 
     child: Partial<CanvasNode>;
     destroyed: boolean;
@@ -218,6 +220,7 @@ interface CreateTextNodeOptions {
 
 interface CanvasTextNode extends CanvasNode {
     text: string;
+    explanation: string;
 }
 
 interface CanvasFileNode extends CanvasNode {
