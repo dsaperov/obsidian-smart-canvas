@@ -1,7 +1,7 @@
 import { App,  ItemView, MarkdownRenderer } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import {
-    Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition, CanvasNodeSize, CreateTextNodeOptions, CanvasView 
+    Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition, CanvasNodeSize, CreateTextNodeOptions, CanvasView, CanvasTextNode
 } from './@types/Canvas';
 import { CENTRAL_NODE_COLOR, EDGE_COLOR } from './config';
 import { logger } from './logging';
@@ -122,6 +122,15 @@ export class CanvasHelper {
                 node.nodeEl.classList.add('concept-mapper-central-node');
             }
         });
+    }
+
+    // Method to run attaching tooltips with explanations for all nodes
+    attachNodeExplanations(): void {
+        const canvas = this.getCurrentCanvas();
+        canvas.nodes.forEach((node: CanvasTextNode) => {
+            const explanation = node.unknownData.explanation;
+            this.attachExplanationTooltip(node, explanation);
+        })
     }
 
     // Method to add line breaks to text based on a maximum line length
