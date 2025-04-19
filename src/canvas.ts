@@ -6,6 +6,7 @@ import {
 import { CENTRAL_NODE_COLOR, EDGE_COLOR } from './config';
 import { logger } from './logging';
 import { getRandomId } from './utils';
+import { Entity } from './interfaces';
 
 export class CanvasHelper {
     app: App;
@@ -33,19 +34,23 @@ export class CanvasHelper {
 
     createTextNode(
         pos: CanvasNodePosition,
-        text: string,
+        entity: Entity,
         size: CanvasNodeSize,
         color: string | undefined
     ): CanvasNode {
         const canvas: Canvas = this.getCurrentCanvas();
         const nodeData: CreateTextNodeOptions = {
-            text,
+            text: entity.name,
             pos: pos,
             size: size,
             save: true,
             focus: false
         };
         const node = canvas.createTextNode(nodeData);
+
+        if (node) {
+            this.saveNodeExplanationData(node.id, entity.explanation);
+        }
 
         // If color is provided, set it to the node
         if (color && node) {
@@ -143,6 +148,20 @@ export class CanvasHelper {
         }
         
         return lines.join('\n');
+    }
+
+    // Method to add an explanation field to node JSON and set its value
+    private saveNodeExplanationData(nodeId: string, explanation: string): void {
+        // Get actual canvas data
+        const canvas = this.getCurrentCanvas();
+        const data = canvas.getData();
+
+        // Find the node with the given ID and set value for explanation field
+        const nodeJson = data.nodes.find(n => n.id === nodeId);
+        if (nodeJson) {
+          nodeJson.explanation = explanation;
+          canvas.setData(data);
+        }
     }
 }
 

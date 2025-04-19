@@ -228,7 +228,7 @@ export class ConceptMapCreator {
                 color = this.colorizer.getNodeColor(level);
             }
 
-            const newNode = this.canvasHelper.createTextNode(pos, entity.name, size, color);
+            const newNode = this.canvasHelper.createTextNode(pos, entity, size, color);
             if (newNode) {
                 nodeMap.set(entity.id, newNode.id);
             } else {
