@@ -173,6 +173,9 @@ export class CanvasHelper {
 
         // Callback function to show tooltip on mouse moving over the node
         const showTooltip = (e: MouseEvent) => {
+            const currentView = this.app.workspace.getActiveViewOfType(ItemView);
+            if (!currentView) return; // No active view
+
             if (!tooltip) {
                 // Create tooltip element and append it to the body
                 tooltip = document.createElement('div');
@@ -185,7 +188,7 @@ export class CanvasHelper {
                     explanation,
                     tooltip,
                     this.app.workspace.getActiveFile()?.path || '',
-                    this.plugin
+                    currentView
                 );
                 
             }
