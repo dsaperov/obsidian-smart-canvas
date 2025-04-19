@@ -20,3 +20,7 @@ export interface ConceptMapLayoutGenerationResult {
     metrics: ConceptMapLayoutQualityMetrics;
     algorithm: LayoutAlgorithm;
 }
+
+export interface HTMLElementWithTooltip extends HTMLElement {
+    _conceptMapperTooltipHandler?: boolean;
+}

@@ -1,4 +1,4 @@
-import { App, ItemView } from 'obsidian';
+import { App,  ItemView, MarkdownRenderer } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import {
     Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition, CanvasNodeSize, CreateTextNodeOptions, CanvasView 
@@ -6,7 +6,7 @@ import {
 import { CENTRAL_NODE_COLOR, EDGE_COLOR } from './config';
 import { logger } from './logging';
 import { getRandomId } from './utils';
-import { Entity } from './interfaces';
+import { Entity, HTMLElementWithTooltip } from './interfaces';
 
 export class CanvasHelper {
     app: App;
@@ -162,6 +162,51 @@ export class CanvasHelper {
           nodeJson.explanation = explanation;
           canvas.setData(data);
         }
+    }
+
+    // Method to attach a tooltip to a node that shows the explanation when hovered over
+    private attachExplanationTooltip(node: CanvasNode, explanation: string): void {
+        const el = node.nodeEl as HTMLElementWithTooltip;
+        if (el._conceptMapperTooltipHandler) return; // Prevent multiple handlers
+        
+        let tooltip: HTMLElement | null = null;
+
+        // Callback function to show tooltip on mouse moving over the node
+        const showTooltip = (e: MouseEvent) => {
+            if (!tooltip) {
+                // Create tooltip element and append it to the body
+                tooltip = document.createElement('div');
+                tooltip.classList.add('concept-mapper-explanation-tooltip');
+                document.body.appendChild(tooltip);
+
+                // Render markdown inside the tooltip
+                MarkdownRenderer.render(
+                    this.app,
+                    explanation,
+                    tooltip,
+                    this.app.workspace.getActiveFile()?.path || '',
+                    this.plugin
+                );
+                
+            }
+            // Position the tooltip near the mouse cursor
+            tooltip.style.top = `${e.clientY + 10}px`;
+            tooltip.style.left = `${e.clientX + 10}px`;
+        };
+    
+        // Callback function to hide tooltip when mouse leaves the node
+        const hideTooltip = () => {
+            if (tooltip) {
+                tooltip.remove();
+                tooltip = null;
+            }
+        };
+
+        el.addEventListener('mousemove', showTooltip);
+        el.addEventListener('mouseleave', hideTooltip);
+
+        // Mark that the tooltip handler is already attached
+        el._conceptMapperTooltipHandler = true;
     }
 }
 
