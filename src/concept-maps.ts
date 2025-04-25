@@ -40,7 +40,7 @@ export class ConceptMapCreator {
     }
 
     async createConceptMap(topic: string, text: string): Promise<void> {
-        const conceptMapData: ConceptMapData = JSON.parse(await this.getConcepMapData(topic, text, false));
+        const conceptMapData: ConceptMapData = await this.getConcepMapData(topic, text, false);
 
         if (!conceptMapData || !conceptMapData.entities || !conceptMapData.relationships) {
             throw new Error('Invalid concept map data format received from backend.');
@@ -93,7 +93,7 @@ export class ConceptMapCreator {
     }
 
     // Method to send a request to the backend server to get concept map data
-    private async getConcepMapData(topic: string, text: string, sample: boolean = false): Promise<string> {
+    private async getConcepMapData(topic: string, text: string, sample: boolean = false): Promise<ConceptMapData> {
         try {
             const data = JSON.stringify({ topic, text });
             
@@ -119,7 +119,13 @@ export class ConceptMapCreator {
                     
                     res.on('end', () => {
                         try {
-                            resolve(responseData);
+                            const parsedResponseData = JSON.parse(responseData);
+                            if (parsedResponseData.details) {
+                                // If there are details, reject the promise with the error message
+                                reject(new Error(`Error from backend: ${parsedResponseData.details}`));
+                            }
+                            // Otherwise, try to resolve the promise
+                            resolve(parsedResponseData);
                         } catch (error) {
                             reject(new Error(`Error parsing response from backend: ${error.message}`));
                         }
@@ -135,7 +141,7 @@ export class ConceptMapCreator {
             });
         } catch (error) {
             logger.error('Error recieving response from backend:', error);
-            return `Error: ${error.message}`;
+            throw error;
         }
     }
 
