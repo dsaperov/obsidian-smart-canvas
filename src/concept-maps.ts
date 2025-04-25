@@ -105,7 +105,7 @@ export class ConceptMapCreator {
                     method: sample ? 'GET' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Content-Length': data.length,
+                        'Content-Length': Buffer.byteLength(data, 'utf8')
                     },
                     family: 4
                 };
