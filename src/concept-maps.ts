@@ -40,7 +40,7 @@ export class ConceptMapCreator {
     }
 
     async createConceptMap(topic: string, text: string): Promise<void> {
-        const conceptMapData: ConceptMapData = await this.getConcepMapData(topic, text, false);
+        const conceptMapData: ConceptMapData = await this.getConceptMapData(topic, text, false);
 
         if (!conceptMapData || !conceptMapData.entities || !conceptMapData.relationships) {
             throw new Error('Invalid concept map data format received from backend.');
@@ -93,7 +93,7 @@ export class ConceptMapCreator {
     }
 
     // Method to send a request to the backend server to get concept map data
-    private async getConcepMapData(topic: string, text: string, sample: boolean = false): Promise<ConceptMapData> {
+    private async getConceptMapData(topic: string, text: string, sample: boolean = false): Promise<ConceptMapData> {
         try {
             const data = JSON.stringify({ topic, text });
             
