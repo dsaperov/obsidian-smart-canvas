@@ -53,13 +53,14 @@ export default class ConceptMapper extends Plugin {
         document.documentElement.style.setProperty('--central-node-color-rgb', hexToRgb(CENTRAL_NODE_COLOR));
     }
 
-    // Method to register event listener for canvas note open to add classes to elements
+    // Method to register event listener for canvas note open to add classes to elements and attach tooltips with explanations
     private registerFileOpenEventListener(): void {
         this.registerEvent(
             this.app.workspace.on('file-open', (file) => {
                 if (file && file.extension === 'canvas') {
                     setTimeout(() => {
                         this.canvasHelper.applyClasses();
+                        this.canvasHelper.attachExplanationsWhenReady();
                     }, 100);
                 }
             })

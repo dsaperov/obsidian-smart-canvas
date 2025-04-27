@@ -1,7 +1,12 @@
 // LLM answer
 export interface ConceptMapData {
-    entities: { id: string; name: string }[];
-    relationships: { source_id: string; target_id: string; label: string }[];
+    entities: Entity[];
+    relationships: Relationship[];
+}
+
+export interface Entity { id: string; name: string; explanation: string; }
+export interface Relationship { 
+    source_id: string; target_id: string; label: string; explanation: string;
 }
 
 export interface ConceptMapLayoutQualityMetrics {
@@ -17,4 +22,8 @@ export interface ConceptMapLayoutGenerationResult {
     canvasData: any;
     metrics: ConceptMapLayoutQualityMetrics;
     algorithm: LayoutAlgorithm;
+}
+
+export interface HTMLElementWithTooltip extends HTMLElement {
+    _conceptMapperTooltipHandler?: boolean;
 }

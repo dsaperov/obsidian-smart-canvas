@@ -1,11 +1,13 @@
-import { App, ItemView } from 'obsidian';
+import { App,  ItemView, MarkdownRenderer } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import {
-    Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition, CanvasNodeSize, CreateTextNodeOptions, CanvasView 
+    Canvas, CanvasEdge, CanvasEdgeData, CanvasNode, CanvasNodePosition,
+    CanvasNodeSize, CanvasObject, CreateTextNodeOptions, CanvasView
 } from './@types/Canvas';
 import { CENTRAL_NODE_COLOR, EDGE_COLOR } from './config';
 import { logger } from './logging';
 import { getRandomId } from './utils';
+import { Entity, HTMLElementWithTooltip, Relationship } from './interfaces';
 
 export class CanvasHelper {
     app: App;
@@ -33,19 +35,23 @@ export class CanvasHelper {
 
     createTextNode(
         pos: CanvasNodePosition,
-        text: string,
+        entity: Entity,
         size: CanvasNodeSize,
         color: string | undefined
     ): CanvasNode {
         const canvas: Canvas = this.getCurrentCanvas();
         const nodeData: CreateTextNodeOptions = {
-            text,
+            text: entity.name,
             pos: pos,
             size: size,
             save: true,
             focus: false
         };
         const node = canvas.createTextNode(nodeData);
+
+        if (node) {
+            this.saveNodeExplanationData(node.id, entity.explanation);
+        }
 
         // If color is provided, set it to the node
         if (color && node) {
@@ -57,11 +63,14 @@ export class CanvasHelper {
 
     createEdge(
         fromNodeId: string,
-        toNodeId: string,
-        isColoredEdgesEnabled: boolean,
-        label?: string
+        toNodeId: string, 
+        relationship: Relationship,
+        isColoredEdgesEnabled: boolean
     ): void {
         const canvas: Canvas = this.getCurrentCanvas();
+
+        let label = relationship.label;
+        const explanation = relationship.explanation
 
         const fromNode = canvas.nodes.get(fromNodeId);
         const toNode = canvas.nodes.get(toNodeId);
@@ -86,7 +95,8 @@ export class CanvasHelper {
             fromSide: fromSide,
             toNode: toNodeId,
             toSide: toSide,
-            label: label
+            label: label,
+            explanation: explanation,
         };
 
         if (isColoredEdgesEnabled) {
@@ -119,6 +129,47 @@ export class CanvasHelper {
         });
     }
 
+    // Method to wait untill all edges are initialized and then run attachExplanations()
+    attachExplanationsWhenReady(): void {
+        const maxAttempts = 5
+        const delay = 100
+
+        let attempts = 0;
+        
+        const tryAttach = () => {
+            const canvas = this.getCurrentCanvas();
+            const allEdgesInitialized = Array.from(canvas.edges.values())
+                .every(edge => edge.initialized);
+
+            if (allEdgesInitialized) {
+                this.attachExplanations(canvas);
+            } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(tryAttach, delay);
+            } else {
+                logger.error('Could not wait for edges to be initialized. Explanations not attached.');
+            }
+        };
+        
+        // Начать проверки
+        setTimeout(tryAttach, delay);
+    }
+
+    // Method to run attaching tooltips with explanations for all nodes and edges
+    attachExplanations(canvas: Canvas): void {
+        const canvasObjectCollections = [
+            { collection: canvas.nodes, isNode: true },
+            { collection: canvas.edges, isNode: false }
+        ];
+        for (const { collection, isNode } of canvasObjectCollections) {
+            collection.forEach((canvasObject: CanvasObject) => {
+                const explanation = canvasObject.unknownData.explanation;
+                if (!explanation) return; // No explanation to attach
+                this.attachExplanationTooltip(canvasObject, explanation, isNode);
+            });
+        }
+    }
+
     // Method to add line breaks to text based on a maximum line length
     private formatTextWithLineBreaks(text: string, maxLength: number): string {
         const words = text.split(' ');
@@ -143,6 +194,81 @@ export class CanvasHelper {
         }
         
         return lines.join('\n');
+    }
+
+    // Method to add an explanation field to node JSON and set its value
+    private saveNodeExplanationData(nodeId: string, explanation: string): void {
+        // Get actual canvas data
+        const canvas = this.getCurrentCanvas();
+        const data = canvas.getData();
+
+        // Find the node with the given ID and set value for explanation field
+        const nodeJson = data.nodes.find(n => n.id === nodeId);
+        if (nodeJson) {
+          nodeJson.explanation = explanation;
+          canvas.setData(data);
+        }
+    }
+
+    // Method to attach a tooltip to a node that shows the explanation when hovered over
+    private attachExplanationTooltip(
+        canvasObject: CanvasObject, explanation: string, isNode: boolean
+    ): void {
+        const el = this.getHtmlForCanvasObject(canvasObject, isNode)
+        if (el._conceptMapperTooltipHandler) return; // Prevent multiple handlers
+        
+        let tooltip: HTMLElement | null = null;
+
+        // Callback function to show tooltip on mouse moving over the node
+        const showTooltip = (e: MouseEvent) => {
+            const currentView = this.app.workspace.getActiveViewOfType(ItemView);
+            if (!currentView) return; // No active view
+
+            if (!tooltip) {
+                // Create tooltip element and append it to the body
+                tooltip = document.createElement('div');
+                tooltip.classList.add('concept-mapper-explanation-tooltip');
+                document.body.appendChild(tooltip);
+
+                // Render markdown inside the tooltip
+                MarkdownRenderer.render(
+                    this.app,
+                    explanation,
+                    tooltip,
+                    this.app.workspace.getActiveFile()?.path || '',
+                    currentView
+                );
+                
+            }
+            // Position the tooltip near the mouse cursor
+            tooltip.style.top = `${e.clientY + 10}px`;
+            tooltip.style.left = `${e.clientX + 10}px`;
+        };
+    
+        // Callback function to hide tooltip when mouse leaves the node
+        const hideTooltip = () => {
+            if (tooltip) {
+                tooltip.remove();
+                tooltip = null;
+            }
+        };
+
+        el.addEventListener('mousemove', showTooltip);
+        el.addEventListener('mouseleave', hideTooltip);
+
+        // Mark that the tooltip handler is already attached
+        el._conceptMapperTooltipHandler = true;
+    }
+
+    // Method to get the HTML element for a canvas object (node or edge)
+    private getHtmlForCanvasObject(canvasObject: CanvasObject, isNode: boolean): HTMLElementWithTooltip {
+        let el: HTMLElementWithTooltip;
+        if (isNode) {
+            el = (canvasObject as CanvasNode).nodeEl;
+        } else {
+            el = (canvasObject as CanvasEdge).labelElement.textareaEl;
+        }
+        return el
     }
 }
 

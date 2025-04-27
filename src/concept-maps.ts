@@ -234,7 +234,7 @@ export class ConceptMapCreator {
                 color = this.colorizer.getNodeColor(level);
             }
 
-            const newNode = this.canvasHelper.createTextNode(pos, entity.name, size, color);
+            const newNode = this.canvasHelper.createTextNode(pos, entity, size, color);
             if (newNode) {
                 nodeMap.set(entity.id, newNode.id);
             } else {
@@ -254,8 +254,8 @@ export class ConceptMapCreator {
                 this.canvasHelper.createEdge(
                     fromNodeId,
                     toNodeId,
-                    isColoredEdgesEnabled,
-                    relationship.label
+                    relationship,
+                    isColoredEdgesEnabled
                 );
             } else {
                 logger.error(`Could not find nodes for relationship: ${relationship.source_id} -> ${relationship.target_id}`);
@@ -387,6 +387,9 @@ export class ConceptMapCreator {
 
         // Apply custom classes to nodes
         this.canvasHelper.applyClasses();
+
+        // Attach explanations for nodes and edges
+        this.canvasHelper.attachExplanationsWhenReady()
     }
 
     public switchLayout(): void {
