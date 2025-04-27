@@ -176,8 +176,10 @@ export class CanvasHelper {
     }
 
     // Method to attach a tooltip to a node that shows the explanation when hovered over
-    private attachExplanationTooltip(node: CanvasNode, explanation: string): void {
-        const el = node.nodeEl as HTMLElementWithTooltip;
+    private attachExplanationTooltip(
+        canvasObject: CanvasObject, explanation: string, isNode: boolean
+    ): void {
+        const el = this.getHtmlForCanvasObject(canvasObject, isNode)
         if (el._conceptMapperTooltipHandler) return; // Prevent multiple handlers
         
         let tooltip: HTMLElement | null = null;
