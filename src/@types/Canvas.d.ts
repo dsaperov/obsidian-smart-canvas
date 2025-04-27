@@ -137,6 +137,7 @@ interface CanvasNode {
     contentEl: HTMLElement;
     nodeEl: HTMLElement;
     placeholderEl: HTMLElement;
+
     unknownData: UnknownData;
 
     child: Partial<CanvasNode>;
@@ -220,7 +221,6 @@ interface CreateTextNodeOptions {
 
 interface CanvasTextNode extends CanvasNode {
     text: string;
-    explanation: string;
 }
 
 interface CanvasFileNode extends CanvasNode {
