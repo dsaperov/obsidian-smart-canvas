@@ -1,13 +1,13 @@
 import { App,  ItemView, MarkdownRenderer } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import {
-    Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition,
+    Canvas, CanvasEdge, CanvasEdgeData, CanvasNode, CanvasNodePosition,
     CanvasNodeSize, CanvasObject, CreateTextNodeOptions, CanvasView
 } from './@types/Canvas';
 import { CENTRAL_NODE_COLOR, EDGE_COLOR } from './config';
 import { logger } from './logging';
 import { getRandomId } from './utils';
-import { Entity, HTMLElementWithTooltip } from './interfaces';
+import { Entity, HTMLElementWithTooltip, Relationship } from './interfaces';
 
 export class CanvasHelper {
     app: App;
@@ -63,11 +63,14 @@ export class CanvasHelper {
 
     createEdge(
         fromNodeId: string,
-        toNodeId: string,
-        isColoredEdgesEnabled: boolean,
-        label?: string
+        toNodeId: string, 
+        relationship: Relationship,
+        isColoredEdgesEnabled: boolean
     ): void {
         const canvas: Canvas = this.getCurrentCanvas();
+
+        let label = relationship.label;
+        const explanation = relationship.explanation
 
         const fromNode = canvas.nodes.get(fromNodeId);
         const toNode = canvas.nodes.get(toNodeId);
@@ -92,7 +95,8 @@ export class CanvasHelper {
             fromSide: fromSide,
             toNode: toNodeId,
             toSide: toSide,
-            label: label
+            label: label,
+            explanation: explanation,
         };
 
         if (isColoredEdgesEnabled) {

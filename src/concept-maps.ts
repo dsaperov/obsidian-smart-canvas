@@ -248,8 +248,8 @@ export class ConceptMapCreator {
                 this.canvasHelper.createEdge(
                     fromNodeId,
                     toNodeId,
-                    isColoredEdgesEnabled,
-                    relationship.label
+                    relationship,
+                    isColoredEdgesEnabled
                 );
             } else {
                 logger.error(`Could not find nodes for relationship: ${relationship.source_id} -> ${relationship.target_id}`);
