@@ -1,7 +1,8 @@
 import { App,  ItemView, MarkdownRenderer } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import {
-    Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition, CanvasNodeSize, CreateTextNodeOptions, CanvasView, CanvasTextNode
+    Canvas, CanvasEdgeData, CanvasNode, CanvasNodePosition,
+    CanvasNodeSize, CanvasObject, CreateTextNodeOptions, CanvasView
 } from './@types/Canvas';
 import { CENTRAL_NODE_COLOR, EDGE_COLOR } from './config';
 import { logger } from './logging';
@@ -220,6 +221,18 @@ export class CanvasHelper {
 
         // Mark that the tooltip handler is already attached
         el._conceptMapperTooltipHandler = true;
+    }
+
+    // Method to get the HTML element for a canvas object (node or edge)
+    private getHtmlForCanvasObject(canvasObject: CanvasObject, isNode: boolean): HTMLElementWithTooltip {
+        let el: HTMLElementWithTooltip;
+        if (isNode) {
+            el = (canvasObject as CanvasNode).nodeEl;
+        } else {
+            console.log(canvasObject);
+            el = (canvasObject as CanvasEdge).labelElement.textareaEl;
+        }
+        return el
     }
 }
 
