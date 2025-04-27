@@ -1,10 +1,13 @@
 // LLM answer
 export interface ConceptMapData {
     entities: Entity[];
-    relationships: { source_id: string; target_id: string; label: string; }[];
+    relationships: Relationship[];
 }
 
 export interface Entity { id: string; name: string; explanation: string; }
+export interface Relationship { 
+    source_id: string; target_id: string; label: string; explanation: string;
+}
 
 export interface ConceptMapLayoutQualityMetrics {
     nodeOverlaps: number;

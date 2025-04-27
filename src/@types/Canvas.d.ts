@@ -5,6 +5,7 @@ type CanvasNodeID = string;
 type CanvasEdgeID = string;
 type CanvasDirection = 'bottomright' | 'bottomleft'  | 'topright' | 'topleft' | 'right' | 'left' | 'top' | 'bottom';
 type UnknownData = Record<string, string>;
+type CanvasObject = CanvasNode | CanvasEdge;
 
 interface CanvasView extends ItemView {
     canvas: Canvas;
@@ -71,6 +72,10 @@ interface CanvasEdge {
         display: SVGPathElement;
         interaction: SVGPathElement;
     };
+    
+    labelElement: CanvasEdgeLabelElement;
+
+    unknownData: UnknownData;
     
     initialized: boolean;
 
@@ -246,6 +251,11 @@ interface CanvasEdgeData {
     color?: CanvasColor;
     label?: string;
     [key: string]: any;
+    explanation: string;
+}
+
+interface CanvasEdgeLabelElement {
+    textareaEl: HTMLElement;
 }
 
 export interface CanvasData {
