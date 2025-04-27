@@ -266,7 +266,6 @@ export class CanvasHelper {
         if (isNode) {
             el = (canvasObject as CanvasNode).nodeEl;
         } else {
-            console.log(canvasObject);
             el = (canvasObject as CanvasEdge).labelElement.textareaEl;
         }
         return el
