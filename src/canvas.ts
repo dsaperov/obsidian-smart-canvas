@@ -125,14 +125,20 @@ export class CanvasHelper {
         });
     }
 
-    // Method to run attaching tooltips with explanations for all nodes
-    attachNodeExplanations(): void {
-        const canvas = this.getCurrentCanvas();
-        canvas.nodes.forEach((node: CanvasTextNode) => {
-            const explanation = node.unknownData.explanation;
-            if (!explanation) return; // No explanation to attach
-            this.attachExplanationTooltip(node, explanation);
-        })
+
+    // Method to run attaching tooltips with explanations for all nodes and edges
+    attachExplanations(canvas: Canvas): void {
+        const canvasObjectCollections = [
+            { collection: canvas.nodes, isNode: true },
+            { collection: canvas.edges, isNode: false }
+        ];
+        for (const { collection, isNode } of canvasObjectCollections) {
+            collection.forEach((canvasObject: CanvasObject) => {
+                const explanation = canvasObject.unknownData.explanation;
+                if (!explanation) return; // No explanation to attach
+                this.attachExplanationTooltip(canvasObject, explanation, isNode);
+            });
+        }
     }
 
     // Method to add line breaks to text based on a maximum line length
