@@ -60,7 +60,7 @@ export default class ConceptMapper extends Plugin {
                 if (file && file.extension === 'canvas') {
                     setTimeout(() => {
                         this.canvasHelper.applyClasses();
-                        this.canvasHelper.attachNodeExplanations();
+                        this.canvasHelper.attachExplanationsWhenReady();
                     }, 100);
                 }
             })

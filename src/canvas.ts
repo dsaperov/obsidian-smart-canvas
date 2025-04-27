@@ -129,6 +129,31 @@ export class CanvasHelper {
         });
     }
 
+    // Method to wait untill all edges are initialized and then run attachExplanations()
+    attachExplanationsWhenReady(): void {
+        const maxAttempts = 5
+        const delay = 100
+
+        let attempts = 0;
+        
+        const tryAttach = () => {
+            const canvas = this.getCurrentCanvas();
+            const allEdgesInitialized = Array.from(canvas.edges.values())
+                .every(edge => edge.initialized);
+
+            if (allEdgesInitialized) {
+                this.attachExplanations(canvas);
+            } else if (attempts < maxAttempts) {
+                attempts++;
+                setTimeout(tryAttach, delay);
+            } else {
+                logger.error('Could not wait for edges to be initialized. Explanations not attached.');
+            }
+        };
+        
+        // Начать проверки
+        setTimeout(tryAttach, delay);
+    }
 
     // Method to run attaching tooltips with explanations for all nodes and edges
     attachExplanations(canvas: Canvas): void {

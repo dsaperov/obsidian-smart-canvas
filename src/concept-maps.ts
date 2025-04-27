@@ -382,8 +382,8 @@ export class ConceptMapCreator {
         // Apply custom classes to nodes
         this.canvasHelper.applyClasses();
 
-        // Attach node explanations
-        this.canvasHelper.attachNodeExplanations();
+        // Attach explanations for nodes and edges
+        this.canvasHelper.attachExplanationsWhenReady()
     }
 
     public switchLayout(): void {
