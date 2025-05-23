@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, Modal, Notice } from 'obsidian';
 import { ConceptMapCreator } from './concept-maps';
 import { SmartCanvasSettings } from './settings'; 
 
@@ -57,9 +57,17 @@ export class StartConceptMapCreationModal extends SmartCanvasModal {
     }
 
     private handleStartCreation() {
+        const topic = this.topicInput.value.trim();
+
+        if (!topic) {
+            new Notice('Topic cannot be empty.');
+            this.topicInput.addClass('input-error'); 
+            setTimeout(() => this.topicInput.removeClass('input-error'), 1000);
+            return; 
+        }
+
         this.close();
         
-        const topic = this.topicInput.value.trim();
         const text = this.textInput.value.trim();
         this.conceptMapCreator.createConceptMap(topic, text);
     }

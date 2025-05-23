@@ -81,3 +81,7 @@
     min-width: 10px;
     min-height: 10px; 
 }
+
+.input-error {
+    border: 1px solid red !important;
+}
