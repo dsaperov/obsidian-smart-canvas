@@ -215,7 +215,9 @@ export class CanvasHelper {
         canvasObject: CanvasObject, explanation: string, isNode: boolean
     ): void {
         const el = this.getHtmlForCanvasObject(canvasObject, isNode)
-        if (el._conceptMapperTooltipHandler) return; // Prevent multiple handlers
+
+        // If element is not found or already has a tooltip handler, do nothing
+        if (!el || el._conceptMapperTooltipHandler) return;
         
         let tooltip: HTMLElement | null = null;
 
@@ -261,11 +263,13 @@ export class CanvasHelper {
     }
 
     // Method to get the HTML element for a canvas object (node or edge)
-    private getHtmlForCanvasObject(canvasObject: CanvasObject, isNode: boolean): HTMLElementWithTooltip {
+    private getHtmlForCanvasObject(canvasObject: CanvasObject, isNode: boolean): HTMLElementWithTooltip | undefined {
         let el: HTMLElementWithTooltip;
         if (isNode) {
             el = (canvasObject as CanvasNode).nodeEl;
         } else {
+            const label =  (canvasObject as CanvasEdge).label
+            if (!label) return;
             el = (canvasObject as CanvasEdge).labelElement.textareaEl;
         }
         return el
