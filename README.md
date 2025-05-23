@@ -39,7 +39,7 @@ This is a plugin for Obsidian that builds a concept map on a given topic using t
 
 1.  After installation and activation of the plugin, open an empty Canvas note.
 2.  Find plugin's icon on the Obsidian sidebar.
-3.  Click the icon or press `alt` + `s` to open the data input modal window.
+3.  Click the icon to open the data input modal window.
 4.  In the opened window (see the picture below), specify:
     *   **Concept map topic** – The key theme around which the map will be built.
     *   **Text for analysis** – Source textual material.
@@ -48,7 +48,8 @@ This is a plugin for Obsidian that builds a concept map on a given topic using t
 6.  Generation **may take some time**, depending on the text volume and topic complexity (generally, not more than 5 minutes).
 7.  Generated map will be displayed on the active Canvas note.
 
-![alt text](modal.png)
+![demo](demo.gif)
+
 
 **Important**: The plugin requires an active internet connection to work, as it interacts with an external backend service for map generation.
 
