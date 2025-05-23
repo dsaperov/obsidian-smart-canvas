@@ -99,10 +99,13 @@ export class ConceptMapCreator {
             const data = JSON.stringify({ topic, text });
             
             return new Promise((resolve, reject) => {
+                // If no text is provided, topic is a wiki article title, use '/extract_from_wiki' endpoint
+                const extractPath = text.trim() ? '/extract_from_text' : '/extract_from_wiki';
+
                 const options = {
                     hostname: BACKEND_SERVER_HOSTNAME,
                     port: BACKEND_SERVER_PORT,
-                    path: sample ? '/sample' : '/extract_from_text',
+                    path: sample ? '/sample' : extractPath,
                     method: sample ? 'GET' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
