@@ -43,6 +43,7 @@ export class ConceptMapCreator {
         const conceptMapData: ConceptMapData = await this.getConceptMapData(topic, text, false);
 
         if (!conceptMapData || !conceptMapData.entities || !conceptMapData.relationships) {
+            console.error('Invalid concept map data format received from backend:', conceptMapData);
             throw new Error('Invalid concept map data format received from backend.');
         }
  
