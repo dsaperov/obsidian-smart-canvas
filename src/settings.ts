@@ -1,4 +1,4 @@
-export interface ConceptMapperSettings {
+export interface SmartCanvasSettings {
     mySetting: string;
     fixedPathLabels: boolean;
     coloredNodes: boolean;
@@ -7,7 +7,7 @@ export interface ConceptMapperSettings {
     multipleLayoutAlgorithms: boolean;
     animateModals: boolean;
 }
-export const DEFAULT_SETTINGS: ConceptMapperSettings = {
+export const DEFAULT_SETTINGS: SmartCanvasSettings = {
     mySetting: 'default',
     fixedPathLabels: true,
     coloredNodes: true,

@@ -1,6 +1,6 @@
 {
-	"id": "obsidian-concept-mapper",
-	"name": "Concept Mapper",
+	"id": "obsidian-smart-canvas",
+	"name": "Smart Canvas",
 	"minAppVersion": "^1.6.7",
 	"description": "The plugin builds a concept map on a given topic using text provided by the user or external sources.",
 	"author": "Dmitry Saperov",

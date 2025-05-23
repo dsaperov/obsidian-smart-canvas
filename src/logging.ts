@@ -1,7 +1,7 @@
 import { DEBUG_MODE } from './config';
 
 export class Logger {
-    private readonly prefix = 'Concept Mapper';
+    private readonly prefix = 'Smart Canvas';
 
     // Logging info messages, always works
     log(message: string, ...args: any[]): void {

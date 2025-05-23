@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-concept-mapper",
+	"name": "obsidian-smart-canvas",
 	"description": "The plugin builds a concept map on a given topic using text provided by the user or external sources.",
 	"main": "main.js",
 	"scripts": {

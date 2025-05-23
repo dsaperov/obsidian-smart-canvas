@@ -3,12 +3,12 @@ import { CENTRAL_NODE_COLOR, OPTIMIZATION_MODE } from './config';
 import { CanvasHelper } from './canvas';
 import { ConceptMapCreator } from './concept-maps';
 import { StartConceptMapCreationModal } from './modals';
-import { DEFAULT_SETTINGS, ConceptMapperSettings } from './settings';
-import { ConceptMapperSettingTab } from './settings-tab';
+import { DEFAULT_SETTINGS, SmartCanvasSettings } from './settings';
+import { SmartCanvasSettingTab } from './settings-tab';
 import { hexToRgb } from './utils';
 
-export default class ConceptMapper extends Plugin {
-	settings: ConceptMapperSettings;
+export default class SmartCanvas extends Plugin {
+	settings: SmartCanvasSettings;
     private readonly canvasHelper: CanvasHelper;
     private readonly conceptMapCreator: ConceptMapCreator;
 
@@ -20,9 +20,9 @@ export default class ConceptMapper extends Plugin {
 
     updateFixedPathLabelsClass(): void {
         if (this.settings.fixedPathLabels) {
-            document.body.classList.add('concept-mapper-fixed-path-labels');
+            document.body.classList.add('smart-canvas-fixed-path-labels');
         } else {
-            document.body.classList.remove('concept-mapper-fixed-path-labels');
+            document.body.classList.remove('smart-canvas-fixed-path-labels');
         }
     }
 
@@ -32,7 +32,7 @@ export default class ConceptMapper extends Plugin {
         this.updateFixedPathLabelsClass();
         this.registerFileOpenEventListener();
         this.addStartConceptMapCreationRibbonIcon();
-		this.addSettingTab(new ConceptMapperSettingTab(this.app, this));
+		this.addSettingTab(new SmartCanvasSettingTab(this.app, this));
 
         // Add commands
         this.addStartConceptMapCreationCommand();
@@ -68,7 +68,7 @@ export default class ConceptMapper extends Plugin {
     }
 
     private addStartConceptMapCreationRibbonIcon(): void {
-        this.addRibbonIcon('network', 'Concept Mapper', async (evt: MouseEvent) => {
+        this.addRibbonIcon('network', 'Smart Canvas', async (evt: MouseEvent) => {
             this.openStartConceptMapCreationModal();
         });
     }

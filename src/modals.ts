@@ -1,11 +1,11 @@
 import { App, Modal } from 'obsidian';
 import { ConceptMapCreator } from './concept-maps';
-import { ConceptMapperSettings } from './settings'; 
+import { SmartCanvasSettings } from './settings'; 
 
-class ConceptMapperModal extends Modal {
-    protected readonly getSettings: () => ConceptMapperSettings;
+class SmartCanvasModal extends Modal {
+    protected readonly getSettings: () => SmartCanvasSettings;
 
-    constructor(app: App, getSettings: () => ConceptMapperSettings) {
+    constructor(app: App, getSettings: () => SmartCanvasSettings) {
         super(app);
         this.getSettings = getSettings;
     }
@@ -13,17 +13,17 @@ class ConceptMapperModal extends Modal {
     onOpen() {
         // If animation of modals is enabled, add the class to the modal container element
         if (this.getSettings().animateModals) { 
-            this.containerEl.addClass('concept-mapper-modal-animated');
+            this.containerEl.addClass('smart-canvas-modal-animated');
         }
     }
 }
 
-export class StartConceptMapCreationModal extends ConceptMapperModal {
+export class StartConceptMapCreationModal extends SmartCanvasModal {
     private readonly conceptMapCreator: ConceptMapCreator;
     private topicInput: HTMLInputElement;
     private textInput: HTMLTextAreaElement;
 
-	constructor(app: App, conceptMapCreator: ConceptMapCreator, getSettings: () => ConceptMapperSettings) {
+	constructor(app: App, conceptMapCreator: ConceptMapCreator, getSettings: () => SmartCanvasSettings) {
 		super(app, getSettings);
         this.conceptMapCreator = conceptMapCreator;
 	}

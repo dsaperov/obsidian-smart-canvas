@@ -25,5 +25,5 @@ export interface ConceptMapLayoutGenerationResult {
 }
 
 export interface HTMLElementWithTooltip extends HTMLElement {
-    _conceptMapperTooltipHandler?: boolean;
+    _smartCanvasTooltipHandler?: boolean;
 }

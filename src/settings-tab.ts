@@ -1,10 +1,10 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import ConceptMapper from './main';
+import SmartCanvas from './main';
 
-export class ConceptMapperSettingTab extends PluginSettingTab {
-	plugin: ConceptMapper;
+export class SmartCanvasSettingTab extends PluginSettingTab {
+	plugin: SmartCanvas;
 
-	constructor(app: App, plugin: ConceptMapper) {
+	constructor(app: App, plugin: SmartCanvas) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

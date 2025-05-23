@@ -124,7 +124,7 @@ export class CanvasHelper {
         const canvas = this.getCurrentCanvas();  
         canvas.nodes.forEach((node) => {
             if (node.color === CENTRAL_NODE_COLOR) {
-                node.nodeEl.classList.add('concept-mapper-central-node');
+                node.nodeEl.classList.add('smart-canvas-central-node');
             }
         });
     }
@@ -217,7 +217,7 @@ export class CanvasHelper {
         const el = this.getHtmlForCanvasObject(canvasObject, isNode)
 
         // If element is not found or already has a tooltip handler, do nothing
-        if (!el || el._conceptMapperTooltipHandler) return;
+        if (!el || el._smartCanvasTooltipHandler) return;
         
         let tooltip: HTMLElement | null = null;
 
@@ -229,7 +229,7 @@ export class CanvasHelper {
             if (!tooltip) {
                 // Create tooltip element and append it to the body
                 tooltip = document.createElement('div');
-                tooltip.classList.add('concept-mapper-explanation-tooltip');
+                tooltip.classList.add('smart-canvas-explanation-tooltip');
                 document.body.appendChild(tooltip);
 
                 // Render markdown inside the tooltip
@@ -259,7 +259,7 @@ export class CanvasHelper {
         el.addEventListener('mouseleave', hideTooltip);
 
         // Mark that the tooltip handler is already attached
-        el._conceptMapperTooltipHandler = true;
+        el._smartCanvasTooltipHandler = true;
     }
 
     // Method to get the HTML element for a canvas object (node or edge)

@@ -10,7 +10,7 @@ import {
     ConceptMapData, ConceptMapLayoutQualityMetrics, LayoutAlgorithm, ConceptMapLayoutGenerationResult
 } from './interfaces';
 import { logger } from './logging';
-import { ConceptMapperSettings } from './settings';
+import { SmartCanvasSettings } from './settings';
 import cytoscape from 'cytoscape';
 // @ts-ignore
 import cola from 'cytoscape-cola';
@@ -28,12 +28,12 @@ export class ConceptMapCreator {
     private readonly canvasHelper: CanvasHelper;
     private readonly colorizer: ConceptMapColorizer;
     private readonly layoutEvaluator: LayoutEvaluator = new LayoutEvaluator();
-    private readonly getSettings: () => ConceptMapperSettings;
+    private readonly getSettings: () => SmartCanvasSettings;
     private layoutResults: ConceptMapLayoutGenerationResult[] = []; // Array to store layout generation results
     private currentLayoutIndex: number = 0;
     private lastCanvasPath: string | null = null; // Path of the last opened canvas
 
-    constructor(canvasHelper: CanvasHelper, getSettings: () => ConceptMapperSettings) {
+    constructor(canvasHelper: CanvasHelper, getSettings: () => SmartCanvasSettings) {
         this.canvasHelper = canvasHelper;
         this.colorizer = new ConceptMapColorizer();
         this.getSettings = getSettings;

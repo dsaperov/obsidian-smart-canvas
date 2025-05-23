@@ -40,34 +40,34 @@
     background-color: var(--interactive-accent-hover);
 }
 
-.concept-mapper-fixed-path-labels .canvas-path-label {
+.smart-canvas-fixed-path-labels .canvas-path-label {
     font-size: var(--font-text-size);
     padding: var(--size-2-3);
 }
 
-.canvas-node.concept-mapper-central-node {
+.canvas-node.smart-canvas-central-node {
     --highlight-color: var(--central-node-color-rgb);
     --highlight-shadow: 0 0 5px 5px rgb(var(--highlight-color));
 }
 
-.canvas-node.concept-mapper-central-node .canvas-node-content {
+.canvas-node.smart-canvas-central-node .canvas-node-content {
     background-color: rgba(var(--highlight-color), 0.07); 
 }
 
-.canvas-node.concept-mapper-central-node .canvas-node-container {
+.canvas-node.smart-canvas-central-node .canvas-node-container {
     box-shadow: var(--shadow-stationary), var(--highlight-shadow) !important;
 }
 
-.modal-container.concept-mapper-modal-animated .modal {
-    animation: conceptMapperFadeIn 0.2s ease-in-out;
+.modal-container.smart-canvas-modal-animated .modal {
+    animation: smartCanvasFadeIn 0.2s ease-in-out;
 }
 
-@keyframes conceptMapperFadeIn {
+@keyframes smartCanvasFadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.concept-mapper-explanation-tooltip {
+.smart-canvas-explanation-tooltip {
     position: fixed;
     background: rgba(138, 43, 226, 0.75);
     color: #fff;
