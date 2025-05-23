@@ -69,14 +69,22 @@ export class StartConceptMapCreationModal extends SmartCanvasModal {
         this.close();
         
         const text = this.textInput.value.trim();
-        const loadingNotice = new Notice('Concept map is being generated. This may take a few minutes.', 0);
+
+        // Create a container for the loading indicator
+        const loadingContainer = document.createElement('div');
+        loadingContainer.className = 'concept-map-loading-container';
+        loadingContainer.innerHTML = `
+            <div class="concept-map-loading-spinner"></div>
+            <div class="concept-map-loading-text">Concept map is being generated. This may take a few minutes.</div>
+        `;
+        document.body.appendChild(loadingContainer);
         
         try {
             await this.conceptMapCreator.createConceptMap(topic, text);
-            loadingNotice.hide();
+            loadingContainer.remove();
             new Notice('Concept map has been successfully generated');
         } catch (error) {
-            loadingNotice.hide();
+            loadingContainer.remove();
             new Notice(`An error occurred while creating the concept map. Please try again.`);
         }
     }
