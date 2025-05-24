@@ -22,6 +22,8 @@ This is a plugin for Obsidian that builds a concept map on a given topic using t
 *   **Interactivity**. Display additional information (e.g., concept description, relation context) when hovering over map nodes or connections.
 *   **Simple interface**. Intuitive modal window for data input.
 
+There are some examples of generated concept maps in the `/examples` folder of the repository.
+
 ## How to Use
 
 ### Installation
