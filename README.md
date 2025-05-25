@@ -32,7 +32,7 @@ There are some examples of generated concept maps in the `/examples` folder of t
 2. Open Obsidian Settings → Community Plugins → BRAT.
 3. Click "Add Beta Plugin" and enter the following URL:
    ```
-   https://github.com/dsaperov/obsidian-concept-mapper
+   https://github.com/dsaperov/obsidian-smart-canvas
    ```
 4. Click "Add Plugin" and wait for the installation to complete.
 5. Enable the plugin in Settings → Community Plugins.
