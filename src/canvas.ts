@@ -132,7 +132,7 @@ export class CanvasHelper {
     // Method to wait untill all edges are initialized and then run attachExplanations()
     attachExplanationsWhenReady(): void {
         const maxAttempts = 5
-        const delay = 2500
+        const delay = 7500
 
         let attempts = 0;
         
