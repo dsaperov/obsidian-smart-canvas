@@ -1,4 +1,4 @@
-import { TFile } from 'obsidian';
+import { TFile, requestUrl, RequestUrlParam, Notice } from 'obsidian';
 import { NodeSide } from 'obsidian/canvas';
 import { Canvas, CanvasNode,  CanvasNodeSize, CanvasNodePosition } from './@types/Canvas';
 import { CanvasHelper } from './canvas';
@@ -24,6 +24,9 @@ cytoscape.use(cola);
 cytoscape.use(coseBilkent);
 cytoscape.use(dagre);
 
+const POLLING_INTERVAL_MS = 10000; 
+const MAX_POLLING_ATTEMPTS = 60;
+
 export class ConceptMapCreator {
     private readonly canvasHelper: CanvasHelper;
     private readonly colorizer: ConceptMapColorizer;
@@ -39,8 +42,133 @@ export class ConceptMapCreator {
         this.getSettings = getSettings;
     }
 
+    private async makeApiRequest(
+        method: 'GET' | 'POST',
+        apiPath: string,
+        data?: any
+    ): Promise<any> {
+        const url = `http://${BACKEND_SERVER_HOSTNAME}:${BACKEND_SERVER_PORT}${apiPath}`;
+        const requestParams: RequestUrlParam = {
+            url: url,
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            throw: false,
+        };
+
+        if (data && method === 'POST') {
+            requestParams.body = JSON.stringify(data);
+        }
+
+        try {
+            const response = await requestUrl(requestParams);
+
+            if (response.status >= 200 && response.status < 300) {
+                return response.json;
+            } else {
+                let errorMessage = `API запрос к ${apiPath} не удался со статусом ${response.status}.`;
+                try {
+                    const errorJson = response.json;
+                    if (errorJson && (errorJson.detail || errorJson.message || errorJson.error)) {
+                        errorMessage = errorJson.detail || errorJson.message || errorJson.error;
+                    } else if (response.text && response.text.length < 500) {
+                        errorMessage += ` Тело ответа: ${response.text}`;
+                    }
+                } catch (e) {
+                     if (response.text && response.text.length < 500) {
+                        errorMessage += ` Тело ответа: ${response.text}`;
+                    }
+                }
+                logger.error(`Ошибка API запроса: ${url}, Статус: ${response.status}, Ответ: ${response.text?.substring(0, 500)}`);
+                throw new Error(errorMessage);
+            }
+        } catch (error) {
+            logger.error(`Ошибка во время API запроса к ${url}:`, error);
+            if (error instanceof Error) {
+                 throw new Error(`API запрос к ${apiPath} не удался: ${error.message}`);
+            }
+            throw new Error(`API запрос к ${apiPath} не удался с неизвестной ошибкой.`);
+        }
+    }
+
+    private async initiateConceptMapGeneration(topic: string, text: string): Promise<string> {
+        try {
+            const trimmedText = text.trim();
+            let apiPath: string;
+            let requestBody: { topic: string; text?: string };
+
+            if (trimmedText) {
+                apiPath = '/extract_from_text'; // Если текст предоставлен
+                requestBody = {
+                    topic: topic,
+                    text: trimmedText,
+                };
+            } else {
+                apiPath = '/extract_from_wiki'; // Если текст отсутствует (только тема)
+                requestBody = {
+                    topic: topic,
+                };
+            }
+
+            const response = await this.makeApiRequest('POST', apiPath, requestBody);
+
+            if (response && response.task_id && response.status === "PENDING") {
+                return response.task_id;
+            } else {
+                throw new Error('Не удалось инициировать генерацию карты концептов. Неверный ответ от сервера.');
+            }
+        } catch (error) {
+            logger.error('Ошибка при инициации генерации карты концептов:', error);
+            throw error;
+        }
+    }
+
+    private async pollForConceptMapResult(taskId: string): Promise<ConceptMapData> {
+        let attempts = 0;
+        while (attempts < MAX_POLLING_ATTEMPTS) {
+            attempts++;
+            try {
+                const response = await this.makeApiRequest('GET', `/status/${taskId}`);
+
+                if (response && response.status) {
+                    switch (response.status) {
+                        case 'COMPLETED':
+                            if (response.result && typeof response.result === 'object') {
+                                return response.result as ConceptMapData;
+                            } else if (response.entities && response.relationships) {
+                                const { status, task_id, ...mapData } = response;
+                                return mapData as ConceptMapData;
+                            }
+                            throw new Error('Задача завершена, но данные карты не найдены.');
+                        case 'PENDING':
+                        case 'PROCESSING':
+                            logger.debug(`Статус задачи ${taskId}: ${response.status}. Попытка ${attempts}/${MAX_POLLING_ATTEMPTS}.`);
+                            await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_MS));
+                            break;
+                        case 'FAILED':
+                            const errorMessage = response.error || response.message || 'Неизвестная ошибка выполнения задачи';
+                            throw new Error(`Задача не выполнена: ${errorMessage}`);
+                        default:
+                            throw new Error(`Неизвестный статус задачи: ${response.status}`);
+                    }
+                } else {
+                    if (attempts >= MAX_POLLING_ATTEMPTS) throw new Error('Неверный ответ от сервера ');
+                    await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_MS));
+                }
+            } catch (error) {
+                if (attempts >= MAX_POLLING_ATTEMPTS) {
+                    throw new Error(`Превышено время ожидания для задачи ${taskId} после ${attempts} попыток: ${error.message}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, POLLING_INTERVAL_MS));
+            }
+        }
+        throw new Error(`Достигнуто максимальное количество попыток опроса для задачи ${taskId}.`);
+    }
+
     async createConceptMap(topic: string, text: string): Promise<void> {
-        const conceptMapData: ConceptMapData = await this.getConceptMapData(topic, text, false);
+            const taskId = await this.initiateConceptMapGeneration(topic, text);
+            const conceptMapData: ConceptMapData = await this.pollForConceptMapResult(taskId);
 
         if (!conceptMapData || !conceptMapData.entities || !conceptMapData.relationships) {
             console.error('Invalid concept map data format received from backend:', conceptMapData);
