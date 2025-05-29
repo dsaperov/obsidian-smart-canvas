@@ -3,7 +3,7 @@ import { NodeSide } from 'obsidian/canvas';
 import { Canvas, CanvasNode,  CanvasNodeSize, CanvasNodePosition } from './@types/Canvas';
 import { CanvasHelper } from './canvas';
 import { 
-    CENTRAL_NODE_COLOR, BACKEND_SERVER_HOSTNAME, BACKEND_SERVER_PORT, LAYOUT_ALGORITHMS,
+    CENTRAL_NODE_COLOR, BACKEND_SERVER_ADDRESS, BACKEND_SERVER_PORT, LAYOUT_ALGORITHMS,
     GRID_SPACING, HORIZONTAL_STRETCH_FACTOR
 } from './config';
 import {
@@ -47,7 +47,7 @@ export class ConceptMapCreator {
         apiPath: string,
         data?: any
     ): Promise<any> {
-        const url = `http://${BACKEND_SERVER_HOSTNAME}:${BACKEND_SERVER_PORT}${apiPath}`;
+        const url = `http://${BACKEND_SERVER_ADDRESS}:${BACKEND_SERVER_PORT}${apiPath}`;
         const requestParams: RequestUrlParam = {
             url: url,
             method: method,
@@ -231,7 +231,7 @@ export class ConceptMapCreator {
                 const extractPath = text.trim() ? '/extract_from_text' : '/extract_from_wiki';
 
                 const options = {
-                    hostname: BACKEND_SERVER_HOSTNAME,
+                    hostname: BACKEND_SERVER_ADDRESS,
                     port: BACKEND_SERVER_PORT,
                     path: sample ? '/sample' : extractPath,
                     method: sample ? 'GET' : 'POST',

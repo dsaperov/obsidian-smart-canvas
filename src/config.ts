@@ -6,8 +6,8 @@ export const CENTRAL_NODE_COLOR = '#ff4500';
 export const EDGE_COLOR = '#5CD1FF';
 
 // Backend server
-export const BACKEND_SERVER_HOSTNAME = 'localhost';
-export const BACKEND_SERVER_PORT = 8000;
+export const BACKEND_SERVER_ADDRESS = '87.251.87.228';
+export const BACKEND_SERVER_PORT = 80;
 
 // Layout
 export const LAYOUT_ALGORITHMS = {
