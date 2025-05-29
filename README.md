@@ -42,7 +42,7 @@ There are some examples of generated concept maps in the `/examples` folder of t
 1.  After installation and activation of the plugin, open an empty Canvas note.
 2.  Find plugin's icon on the Obsidian sidebar.
 3.  Click the icon to open the data input modal window.
-4.  In the opened window (see the picture below), specify:
+4.  In the opened window, specify:
     *   **Concept map topic** – The key theme around which the map will be built.
     *   **Text for analysis** – Source textual material.
     *   **Alternative** – You can leave `Text` field empty and paste the name of a Wikipedia article (currently supports only Russian) as a `Topic`. The plugin will use the content of the article as the source text.
